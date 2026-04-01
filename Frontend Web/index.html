@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MyLifeRepo - 我的生活动态仓库</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --sidebar-bg: #161b22;
+      --text-color: #e6edf3;
+      --card-bg: #161b22;
+      --border-color: #30363d;
+      --card-text: #f0f6fc;
+    }
+    .light-mode {
+      --bg-color: #f8f9fa;
+      --sidebar-bg: #f6f8fa;
+      --text-color: #24292f;
+      --card-bg: #ffffff;
+      --border-color: #d0d7de;
+      --card-text: #24292f;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: system-ui, sans-serif;
+      transition: all 0.3s;
+    }
+
+    .main-content {
+      margin-left: 280px;
+      padding: 100px 40px 40px;
+      background: var(--bg-color);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      min-height: 100vh;
+      position: fixed;
+      padding: 40px 25px;
+      top: 0;
+    }
+
+    .avatar-container { height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
+    .avatar { width: 160px; height: 160px; border: 8px solid var(--border-color); border-radius: 50%; object-fit: cover; }
+
+    .nav-top {
+      position: fixed;
+      top: 0;
+      left: 280px;
+      right: 0;
+      z-index: 1000;
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+
+    .card-content {
+      flex: 1;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: var(--card-text);
+    }
+
+    .card-time { font-size: 0.85rem; color: #8b949e; }
+    .light-mode .card-time { color: #57606a; }
+
+    .star-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #ffd700;
+      font-size: 1.4rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .star-btn.active { color: #ffeb3b; }
+
+    .intro-box {
+      background: var(--card-bg);
+      color: var(--card-text);
+      border: 1px solid var(--border-color);
+      height: 160px;
+      resize: none;
+    }
+
+    /* 详情 Modal - Ins 风格适度放大 */
+    .detail-modal .modal-dialog {
+      max-width: 520px;
+    }
+    .detail-modal .modal-content {
+      border-radius: 16px;
+      background: var(--card-bg);
+      color: var(--card-text);
+    }
+  </style>
+</head>
+<body>
+
+<!-- 左侧边栏 -->
+<div class="sidebar">
+  <div class="avatar-container">
+    <img src="https://via.placeholder.com/160" alt="头像" class="avatar" id="sidebarAvatar">
+  </div>
+  <h3 class="fw-bold text-center mb-2" id="sidebarName">MYJINS</h3>
+  <p class="text-center mb-4" id="sidebarBio" style="font-size:1rem;">每天记录一点点，让生活更有仪式感。</p>
+
+  <div class="mb-4 text-start small">
+    <div><strong>籍贯：</strong><span id="hometown">香港</span></div>
+    <div><strong>生日：</strong><span id="birthday">2005-05-15</span></div>
+    <div><strong>爱好：</strong><span id="hobby">摄影、阅读、旅行</span></div>
+  </div>
+
+  <div>
+    <small class="text-muted">自我介绍</small>
+    <textarea id="introBox" class="intro-box form-control w-100" readonly></textarea>
+  </div>
+</div>
+
+<!-- 右上角导航 -->
+<nav class="nav-top d-flex align-items-center justify-content-end gap-3">
+  <button class="btn btn-sm btn-outline-primary" onclick="goToSettings()">
+    <i class="fas fa-edit"></i> 编辑资料
+  </button>
+  <div class="dropdown">
+    <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+      <i class="fas fa-cog"></i> 设置
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li><a class="dropdown-item" href="#" onclick="toggleTheme()">切换浅色 / 深色 模式</a></li>
+    </ul>
+  </div>
+  <div class="dropdown">
+    <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" id="userDropdown">
+      <i class="fas fa-user"></i> <span id="navUsername">MYJINS</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li><a class="dropdown-item" href="#" onclick="logout()">退出登录</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- 主内容 -->
+<div class="main-content">
+  <div class="container">
+    <h4 class="mb-4">所有动态</h4>
+
+    <button onclick="showPostModal()" class="btn btn-success mb-3">
+      <i class="fas fa-plus"></i> 上传日常
+    </button>
+
+    <!-- 分类标签（新增“精华消息”） -->
+    <div class="d-flex gap-2 mb-4 flex-wrap" id="categoryTags"></div>
+
+    <!-- 动态卡片 -->
+    <div class="row" id="dynamicCards"></div>
+  </div>
+</div>
+
+<!-- 动态详情 Modal（Ins风格适度放大） -->
+<div class="modal fade detail-modal" id="postDetailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="modalCategory"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalContentArea" style="font-size:1.15rem; line-height:1.75; min-height: 280px;"></div>
+      <div class="modal-footer border-0">
+        <button onclick="toggleFeaturedFromModal()" class="btn btn-warning">
+          <i class="fas fa-star"></i> 设为精华
+        </button>
+        <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 发布 Modal -->
+<div class="modal fade" id="postModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header">
+        <h5 class="modal-title">上传日常</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <select id="categorySelect" class="form-select mb-3">
+          <option value="日常碎碎念">日常碎碎念</option>
+          <option value="打卡记录">打卡记录</option>
+          <option value="美食旅行">美食旅行</option>
+          <option value="文案">文案</option>
+          <option value="成果成就">成果成就</option>
+        </select>
+        <textarea id="content" class="form-control" rows="5" placeholder="记录今天..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-success" onclick="publishPost()">发布</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// 数据
+let allPosts = [
+  {id:1, category:"日常碎碎念", content:"今天终于把大作业的建模图画完了，超有成就感！", time:"2026-03-30", isFeatured: false},
+  {id:2, category:"打卡记录", content:"早起跑了5公里，天气真好～", time:"2026-03-29", isFeatured: false},
+  {id:3, category:"美食旅行", content:"周六去吃了那家网红火锅，真的绝！", time:"2026-03-28", isFeatured: false},
+  {id:4, category:"文案", content:"生活不止眼前的苟且，还有诗和远方。", time:"2026-03-27", isFeatured: false},
+  {id:5, category:"成果成就", content:"成功跑通了 Flask + MySQL 连接！", time:"2026-03-30", isFeatured: false}
+];
+
+let currentFilter = null;
+
+// 渲染分类标签（包含“精华消息”）
+function renderCategoryTags() {
+  const colors = {
+    "日常碎碎念": "primary",
+    "打卡记录": "success",
+    "美食旅行": "info",
+    "文案": "warning",
+    "成果成就": "danger",
+    "精华消息": "warning"
+  };
+  let html = `<span class="badge bg-secondary badge-custom" onclick="filterCategory(null)">全部</span>`;
+  Object.keys(colors).forEach(cat => {
+    html += `<span class="badge bg-${colors[cat]} badge-custom" onclick="filterCategory('${cat}')">${cat}</span>`;
+  });
+  document.getElementById('categoryTags').innerHTML = html;
+}
+
+function filterCategory(cat) {
+  currentFilter = cat;
+  renderDynamicCards();
+}
+
+// 渲染动态卡片
+function renderDynamicCards() {
+  const container = document.getElementById('dynamicCards');
+  container.innerHTML = '';
+
+  let filtered = allPosts;
+  if (currentFilter === "精华消息") {
+    filtered = allPosts.filter(p => p.isFeatured);
+  } else if (currentFilter) {
+    filtered = allPosts.filter(p => p.category === currentFilter);
+  }
+
+  filtered.forEach(post => {
+    const html = `
+      <div class="col-md-6 mb-4">
+        <div class="card" onclick="showPostDetail(${post.id})">
+          <button onclick="event.stopImmediatePropagation(); toggleFeatured(${post.id});" 
+                  class="star-btn ${post.isFeatured ? 'active' : ''}">
+            <i class="fas fa-star"></i>
+          </button>
+          <div class="card-content">${post.content}</div>
+          <div class="card-time">${post.time}</div>
+        </div>
+      </div>`;
+    container.innerHTML += html;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="col-12 text-center py-5 text-muted">暂无动态</div>`;
+  }
+}
+
+// 切换精华状态
+function toggleFeatured(id) {
+  const post = allPosts.find(p => p.id === id);
+  if (post) {
+    post.isFeatured = !post.isFeatured;
+    renderDynamicCards();
+    alert(post.isFeatured ? "已加入精华消息！" : "已取消精华");
+  }
+}
+
+// 显示详情（适度放大，Ins风格）
+let currentPostId = null;
+function showPostDetail(id) {
+  const post = allPosts.find(p => p.id === id);
+  if (!post) return;
+  currentPostId = id;
+
+  document.getElementById('modalCategory').innerHTML = 
+    `<span class="badge bg-info">${post.category}</span> ${post.isFeatured ? '<span class="badge bg-warning ms-2">🌟 精华</span>' : ''}`;
+
+  document.getElementById('modalContentArea').innerHTML = `
+    <p>${post.content}</p>
+    <small class="text-muted d-block mt-4">${post.time}</small>
+  `;
+
+  new bootstrap.Modal(document.getElementById('postDetailModal')).show();
+}
+
+function toggleFeaturedFromModal() {
+  if (currentPostId) toggleFeatured(currentPostId);
+  bootstrap.Modal.getInstance(document.getElementById('postDetailModal')).hide();
+}
+
+// 发布功能
+function showPostModal() {
+  document.getElementById('content').value = '';
+  new bootstrap.Modal(document.getElementById('postModal')).show();
+}
+
+function publishPost() {
+  const cat = document.getElementById('categorySelect').value;
+  const content = document.getElementById('content').value.trim();
+  if (!content) return alert("内容不能为空！");
+  
+  allPosts.unshift({
+    id: Date.now(),
+    category: cat,
+    content: content,
+    time: "2026-03-30",
+    isFeatured: false
+  });
+  
+  bootstrap.Modal.getInstance(document.getElementById('postModal')).hide();
+  renderDynamicCards();
+  alert("发布成功！");
+}
+
+// 其他辅助功能
+function toggleTheme() {
+  document.body.classList.toggle('light-mode');
+  localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+}
+
+function checkLogin() {
+  const username = localStorage.getItem('username');
+  if (!username) { window.location.href = 'login.html'; return; }
+  document.getElementById('navUsername').textContent = username;
+  document.getElementById('sidebarName').textContent = username;
+}
+
+function goToSettings() { window.location.href = 'settings.html'; }
+
+function logout() {
+  if (confirm("确定退出登录吗？")) {
+    localStorage.removeItem('username');
+    window.location.href = 'login.html';
+  }
+}
+
+function loadProfileFromStorage() {
+  document.getElementById('sidebarAvatar').src = localStorage.getItem('avatar') || "https://via.placeholder.com/160";
+  document.getElementById('sidebarName').textContent = localStorage.getItem('name') || "MYJINS";
+  document.getElementById('sidebarBio').textContent = localStorage.getItem('bio') || "每天记录一点点，让生活更有仪式感。";
+  document.getElementById('hometown').textContent = localStorage.getItem('hometown') || "香港";
+  document.getElementById('birthday').textContent = localStorage.getItem('birthday') || "2005-05-15";
+  document.getElementById('hobby').textContent = localStorage.getItem('hobby') || "摄影、阅读、旅行";
+  document.getElementById('introBox').value = localStorage.getItem('intro') || "hhhh";
+}
+
+// 初始化
+window.onload = () => {
+  checkLogin();
+  if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+  loadProfileFromStorage();
+  renderCategoryTags();
+  renderDynamicCards();
+};
+</script>
+</body>
+</html>
