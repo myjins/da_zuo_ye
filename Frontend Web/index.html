@@ -3,392 +3,380 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MyLifeRepo - 我的生活动态仓库</title>
+  <title>MyLifeRepo - 我的日常</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #0d1117;
-      --sidebar-bg: #161b22;
+      --bg-color: #0a0c10;
+      --sidebar-bg: #111418;
       --text-color: #e6edf3;
       --card-bg: #161b22;
-      --border-color: #30363d;
+      --border-color: #21262d;
       --card-text: #f0f6fc;
+      --accent-color: #58a6ff;
+      --ai-msg-bg: #2d333b;
+      --ai-window-bg: #1c2128;
+      --input-bg: #0d1117;
+      --intro-text-color: #ffffff; /* 确保黑模式下简介文字纯白 */
+      --close-btn-filter: invert(1);
     }
     .light-mode {
-      --bg-color: #f8f9fa;
-      --sidebar-bg: #f6f8fa;
+      --bg-color: #f6f8fa;
+      --sidebar-bg: #ffffff;
       --text-color: #24292f;
       --card-bg: #ffffff;
       --border-color: #d0d7de;
       --card-text: #24292f;
+      --ai-msg-bg: #ebf0f4;
+      --ai-window-bg: #ffffff;
+      --input-bg: #ffffff;
+      --intro-text-color: #24292f; /* 白模式下简介文字深色 */
+      --close-btn-filter: none;
     }
 
-    body {
-      background: var(--bg-color);
-      color: var(--text-color);
-      font-family: system-ui, sans-serif;
+    body { background: var(--bg-color); color: var(--text-color); font-family: -apple-system, system-ui, sans-serif; transition: 0.3s; margin: 0; }
+
+    /* 侧边栏及文字清晰度优化 */
+    .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); min-height: 100vh; position: fixed; padding: 40px 25px; top: 0; left: 0; z-index: 100; }
+    #sidebarBio { color: var(--intro-text-color) !important; opacity: 0.8; }
+    .avatar-container { height: 160px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .avatar { width: 140px !important; height: 140px !important; border: 4px solid var(--border-color); border-radius: 50%; object-fit: cover; background: #21262d; }
+    
+    #introBox { 
+        background: var(--input-bg) !important; 
+        color: var(--intro-text-color) !important; 
+        border: 1px solid var(--border-color); 
+        height: 120px; 
+        resize: none; 
+        font-size: 0.9rem;
+        padding: 10px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    /* 内容布局 */
+    .main-content { margin-left: 280px; padding: 100px 40px 80px; min-height: 100vh; }
+    .nav-top { position: fixed; top: 0; left: 280px; right: 0; z-index: 1000; background: var(--sidebar-bg); border-bottom: 1px solid var(--border-color); padding: 15px 30px; }
+
+    .nav-tabs-custom { border: none; display: flex; gap: 20px; margin-right: auto; }
+    .tab-btn { background: none; border: none; color: #8b949e; font-weight: 600; padding: 5px 0; position: relative; cursor: pointer; }
+    .tab-btn.active { color: var(--accent-color); border-bottom: 2px solid var(--accent-color); }
+
+    /* 管理分类按钮美化 */
+    .btn-manage {
+      background: linear-gradient(135deg, #30363d 0%, #21262d 100%);
+      border: 1px solid var(--border-color);
+      color: #e6edf3 !important;
+      border-radius: 8px;
+      font-weight: 500;
       transition: all 0.3s;
     }
+    .btn-manage:hover { border-color: var(--accent-color); background: #30363d; color: var(--accent-color) !important; }
 
-    .main-content {
-      margin-left: 280px;
-      padding: 100px 40px 40px;
-      background: var(--bg-color);
-      min-height: 100vh;
-    }
+    /* 动态卡片 */
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; position: relative; cursor: pointer; transition: 0.25s; height: 320px !important; display: flex; flex-direction: column; overflow: hidden; }
+    .card:hover { border-color: #8b949e; transform: translateY(-3px); }
+    .featured-card { border: 2.5px solid #f1e05a !important; }
+    .img-preview { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; flex-shrink: 0; }
+    .card-content { font-size: 0.95rem; line-height: 1.5; color: var(--card-text); word-wrap: break-word; white-space: pre-wrap; flex-grow: 1; overflow: hidden; margin-bottom: 25px; }
+    .card-tags-area { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+    .mini-tag { font-size: 0.7rem; background: rgba(56, 139, 253, 0.1); color: #58a6ff; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(56, 139, 253, 0.2); }
+    .card-time { font-size: 0.7rem; color: #8b949e; position: absolute; bottom: 12px; left: 18px; }
+    .action-btns { position: absolute; bottom: 10px; right: 15px; display: flex; gap: 8px; }
+    .action-btn { background: none; border: none; font-size: 1.1rem; color: #8b949e; }
+    .star-btn.active { color: #f1e05a; }
 
-    .sidebar {
-      width: 280px;
-      background: var(--sidebar-bg);
-      border-right: 1px solid var(--border-color);
-      min-height: 100vh;
-      position: fixed;
-      padding: 40px 25px;
-      top: 0;
-    }
+    /* 弹窗文字颜色适配 */
+    .modal-content { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); }
+    .btn-close-white { filter: var(--close-btn-filter); }
+    #catList { color: var(--text-color); }
 
-    .avatar-container { height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
-    .avatar { width: 160px; height: 160px; border: 8px solid var(--border-color); border-radius: 50%; object-fit: cover; }
+    /* AI 助手页面 */
+    #ai-content { display: none; margin-left: 280px; padding: 100px 40px 80px; min-height: 100vh; }
+    .chat-window { max-width: 800px; margin: 0 auto; background: var(--ai-window-bg); border: 1px solid var(--border-color); border-radius: 16px; height: 70vh; display: flex; flex-direction: column; overflow: hidden; }
+    .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+    .ai-msg { align-self: flex-start; background: var(--ai-msg-bg); color: var(--text-color); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); }
+    .user-msg { align-self: flex-end; background: var(--accent-color); color: white; padding: 12px 16px; border-radius: 12px; }
+    .chat-input-box { padding: 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.05); }
+    .chat-input-box input { flex: 1; }
 
-    .nav-top {
-      position: fixed;
-      top: 0;
-      left: 280px;
-      right: 0;
-      z-index: 1000;
-      background: var(--sidebar-bg);
-      border-bottom: 1px solid var(--border-color);
-      padding: 16px 30px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      height: 190px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 16px;
-      position: relative;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-
-    .card-content {
-      flex: 1;
-      font-size: 1.05rem;
-      line-height: 1.55;
-      color: var(--card-text);
-    }
-
-    .card-time { font-size: 0.85rem; color: #8b949e; }
-    .light-mode .card-time { color: #57606a; }
-
-    .star-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: none;
-      border: none;
-      color: #ffd700;
-      font-size: 1.4rem;
-      cursor: pointer;
-      z-index: 10;
-    }
-    .star-btn.active { color: #ffeb3b; }
-
-    .intro-box {
-      background: var(--card-bg);
-      color: var(--card-text);
-      border: 1px solid var(--border-color);
-      height: 160px;
-      resize: none;
-    }
-
-    /* 详情 Modal - Ins 风格适度放大 */
-    .detail-modal .modal-dialog {
-      max-width: 520px;
-    }
-    .detail-modal .modal-content {
-      border-radius: 16px;
-      background: var(--card-bg);
-      color: var(--card-text);
-    }
+    /* 详情弹窗 */
+    .modal-content-fixed { height: 85vh; border-radius: 16px !important; background: var(--card-bg); border: 1px solid var(--border-color); display: flex; flex-direction: column; color: var(--text-color); }
+    .detail-scroll-area { flex: 1; overflow-y: auto; padding: 30px; border-bottom: 1px solid var(--border-color); }
+    .detail-interaction-area { padding: 20px; background: rgba(0,0,0,0.1); height: 280px; display: flex; flex-direction: column; }
+    #commentsList { flex: 1; overflow-y: auto; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
-<!-- 左侧边栏 -->
 <div class="sidebar">
-  <div class="avatar-container">
-    <img src="https://via.placeholder.com/160" alt="头像" class="avatar" id="sidebarAvatar">
+  <div class="avatar-container"><img src="" class="avatar" id="sidebarAvatar"></div>
+  <h4 class="fw-bold text-center mb-1" id="sidebarName">--</h4>
+  <p class="text-center small mb-4" id="sidebarBio">--</p>
+  <div class="mb-4 small px-1">
+    <div class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i><span id="hometown">--</span></div>
+    <div class="mb-2"><i class="fas fa-birthday-cake me-2 text-danger"></i><span id="birthday">--</span></div>
+    <div class="mb-2"><i class="fas fa-tags me-2 text-info"></i><span id="hobby">--</span></div>
   </div>
-  <h3 class="fw-bold text-center mb-2" id="sidebarName">MYJINS</h3>
-  <p class="text-center mb-4" id="sidebarBio" style="font-size:1rem;">每天记录一点点，让生活更有仪式感。</p>
-
-  <div class="mb-4 text-start small">
-    <div><strong>籍贯：</strong><span id="hometown">香港</span></div>
-    <div><strong>生日：</strong><span id="birthday">2005-05-15</span></div>
-    <div><strong>爱好：</strong><span id="hobby">摄影、阅读、旅行</span></div>
-  </div>
-
-  <div>
-    <small class="text-muted">自我介绍</small>
-    <textarea id="introBox" class="intro-box form-control w-100" readonly></textarea>
-  </div>
+  <textarea id="introBox" class="form-control" readonly placeholder="每日记录一点点..."></textarea>
 </div>
 
-<!-- 右上角导航 -->
-<nav class="nav-top d-flex align-items-center justify-content-end gap-3">
-  <button class="btn btn-sm btn-outline-primary" onclick="goToSettings()">
-    <i class="fas fa-edit"></i> 编辑资料
-  </button>
-  <div class="dropdown">
-    <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-      <i class="fas fa-cog"></i> 设置
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end">
-      <li><a class="dropdown-item" href="#" onclick="toggleTheme()">切换浅色 / 深色 模式</a></li>
-    </ul>
+<nav class="nav-top d-flex align-items-center px-4">
+  <div class="nav-tabs-custom">
+    <div class="tab-btn active" id="tabFeatured" onclick="switchPage('featured')">精华消息</div>
+    <div class="tab-btn" id="tabDaily" onclick="switchPage('daily')">我的日常</div>
+    <div class="tab-btn" id="tabAI" onclick="switchPage('ai')"><i class="fas fa-robot me-1"></i>AI助手</div>
   </div>
-  <div class="dropdown">
-    <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" id="userDropdown">
-      <i class="fas fa-user"></i> <span id="navUsername">MYJINS</span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end">
-      <li><a class="dropdown-item" href="#" onclick="logout()">退出登录</a></li>
-    </ul>
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-sm btn-outline-primary border-0" onclick="location.href='settings.html'"><i class="fas fa-edit"></i></button>
+    <div class="dropdown">
+      <button class="btn btn-sm btn-outline-secondary border-0 dropdown-toggle" data-bs-toggle="dropdown"><i class="fas fa-cog"></i></button>
+      <ul class="dropdown-menu dropdown-menu-end shadow">
+        <li><a class="dropdown-item" href="#" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke me-2"></i>切换主题</a></li>
+        <li><a class="dropdown-item" href="password.html"><i class="fas fa-key me-2"></i>修改密码</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-right-from-bracket me-2"></i>退出登录</a></li>
+      </ul>
+    </div>
+    <div class="fw-bold" id="navUsername">User</div>
   </div>
 </nav>
 
-<!-- 主内容 -->
-<div class="main-content">
-  <div class="container">
-    <h4 class="mb-4">所有动态</h4>
-
-    <button onclick="showPostModal()" class="btn btn-success mb-3">
-      <i class="fas fa-plus"></i> 上传日常
-    </button>
-
-    <!-- 分类标签（新增“精华消息”） -->
+<div class="main-content" id="main-content">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="m-0 fw-bold" id="pageTitle">精华消息</h4>
+      <div class="d-flex gap-2" id="actionBtnArea" style="display: none !important;">
+        <button class="btn btn-sm btn-manage px-3" data-bs-toggle="modal" data-bs-target="#manageCategoriesModal">管理分类</button>
+        <button class="btn btn-sm btn-success px-3" data-bs-toggle="modal" data-bs-target="#postModal">+ 发布动态</button>
+      </div>
+    </div>
     <div class="d-flex gap-2 mb-4 flex-wrap" id="categoryTags"></div>
-
-    <!-- 动态卡片 -->
-    <div class="row" id="dynamicCards"></div>
+    <div class="row g-4" id="dynamicCards"></div>
   </div>
 </div>
 
-<!-- 动态详情 Modal（Ins风格适度放大） -->
-<div class="modal fade detail-modal" id="postDetailModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title" id="modalCategory"></h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="modalContentArea" style="font-size:1.15rem; line-height:1.75; min-height: 280px;"></div>
-      <div class="modal-footer border-0">
-        <button onclick="toggleFeaturedFromModal()" class="btn btn-warning">
-          <i class="fas fa-star"></i> 设为精华
-        </button>
-        <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">关闭</button>
+<div id="ai-content">
+  <div class="container-fluid">
+    <h4 class="fw-bold mb-4">AI 智能分析</h4>
+    <div class="chat-window">
+      <div class="chat-messages" id="chatMessages"><div class="ai-msg">你好！我是你的 AI 助手。</div></div>
+      <div class="chat-input-box">
+        <input type="text" id="aiInput" class="form-control bg-dark text-light border-secondary" placeholder="输入消息...">
+        <button onclick="sendAiMsg()" class="btn btn-primary px-4">发送</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 发布 Modal -->
-<div class="modal fade" id="postModal" tabindex="-1">
+<div class="modal fade" id="manageCategoriesModal" tabindex="-1">
   <div class="modal-dialog">
-    <div class="modal-content bg-dark text-light">
-      <div class="modal-header">
-        <h5 class="modal-title">上传日常</h5>
+    <div class="modal-content">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">管理分类标签</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <select id="categorySelect" class="form-select mb-3">
-          <option value="日常碎碎念">日常碎碎念</option>
-          <option value="打卡记录">打卡记录</option>
-          <option value="美食旅行">美食旅行</option>
-          <option value="文案">文案</option>
-          <option value="成果成就">成果成就</option>
-        </select>
-        <textarea id="content" class="form-control" rows="5" placeholder="记录今天..."></textarea>
+        <div class="input-group mb-3">
+          <input type="text" id="newCatInput" class="form-control bg-dark text-light border-secondary" placeholder="新分类名称">
+          <button class="btn btn-success" onclick="addNewCat()">添加</button>
+        </div>
+        <div id="catList"></div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-success" onclick="publishPost()">发布</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 650px;">
+    <div class="modal-content modal-content-fixed">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="detailCategory"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
+      <div class="detail-scroll-area"><div id="detailBody"></div></div>
+      <div class="detail-interaction-area">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex gap-2">
+            <button onclick="addLike()" class="btn btn-sm btn-outline-danger"><i class="fas fa-heart"></i> <span id="likeCount">0</span></button>
+            <button onclick="openEditTagModal()" class="btn btn-sm btn-outline-info"><i class="fas fa-tags"></i> 更改标签</button>
+          </div>
+          <small id="detailTime" class="text-muted"></small>
+        </div>
+        <div id="commentsList"></div>
+        <div class="input-group">
+          <input type="text" id="commentInput" class="form-control bg-dark text-light border-secondary" placeholder="发表评论...">
+          <button onclick="handleComment()" class="btn btn-primary">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="postModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-secondary"><h5>发布日常</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <select id="categorySelect" class="form-select bg-dark text-light border-secondary mb-3" multiple style="height: 100px;"></select>
+        <textarea id="postContent" class="form-control bg-dark text-light border-secondary mb-3" rows="6"></textarea>
+        <input type="file" id="postImage" class="form-control bg-dark text-light border-secondary" accept="image/*">
+      </div>
+      <div class="modal-footer border-secondary"><button class="btn btn-success px-4" onclick="handlePublish()">发布</button></div>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// 数据
-let allPosts = [
-  {id:1, category:"日常碎碎念", content:"今天终于把大作业的建模图画完了，超有成就感！", time:"2026-03-30", isFeatured: false},
-  {id:2, category:"打卡记录", content:"早起跑了5公里，天气真好～", time:"2026-03-29", isFeatured: false},
-  {id:3, category:"美食旅行", content:"周六去吃了那家网红火锅，真的绝！", time:"2026-03-28", isFeatured: false},
-  {id:4, category:"文案", content:"生活不止眼前的苟且，还有诗和远方。", time:"2026-03-27", isFeatured: false},
-  {id:5, category:"成果成就", content:"成功跑通了 Flask + MySQL 连接！", time:"2026-03-30", isFeatured: false}
-];
+// 此处 JS 逻辑保持不变，确保 currentPostId 和 saveNewTags 正常工作
+const user = localStorage.getItem('username') || 'MYJINS';
+let posts = JSON.parse(localStorage.getItem(`posts_${user}`)) || [];
+let cats = JSON.parse(localStorage.getItem(`categories_${user}`)) || ["生活感悟", "学习计划", "旅行笔记"];
+let currentPage = 'featured'; 
+let filterTag = null;
+let currentPostId = null;
 
-let currentFilter = null;
+const save = () => { localStorage.setItem(`posts_${user}`, JSON.stringify(posts)); localStorage.setItem(`categories_${user}`, JSON.stringify(cats)); };
 
-// 渲染分类标签（包含“精华消息”）
-function renderCategoryTags() {
-  const colors = {
-    "日常碎碎念": "primary",
-    "打卡记录": "success",
-    "美食旅行": "info",
-    "文案": "warning",
-    "成果成就": "danger",
-    "精华消息": "warning"
-  };
-  let html = `<span class="badge bg-secondary badge-custom" onclick="filterCategory(null)">全部</span>`;
-  Object.keys(colors).forEach(cat => {
-    html += `<span class="badge bg-${colors[cat]} badge-custom" onclick="filterCategory('${cat}')">${cat}</span>`;
-  });
-  document.getElementById('categoryTags').innerHTML = html;
-}
-
-function filterCategory(cat) {
-  currentFilter = cat;
-  renderDynamicCards();
-}
-
-// 渲染动态卡片
-function renderDynamicCards() {
-  const container = document.getElementById('dynamicCards');
-  container.innerHTML = '';
-
-  let filtered = allPosts;
-  if (currentFilter === "精华消息") {
-    filtered = allPosts.filter(p => p.isFeatured);
-  } else if (currentFilter) {
-    filtered = allPosts.filter(p => p.category === currentFilter);
+function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  const mainDiv = document.getElementById('main-content'), aiDiv = document.getElementById('ai-content'), btnArea = document.getElementById('actionBtnArea');
+  if (page === 'ai') {
+    document.getElementById('tabAI').classList.add('active');
+    mainDiv.style.display = 'none'; aiDiv.style.display = 'block';
+  } else {
+    document.getElementById(page === 'daily' ? 'tabDaily' : 'tabFeatured').classList.add('active');
+    mainDiv.style.display = 'block'; aiDiv.style.display = 'none';
+    document.getElementById('pageTitle').innerText = page === 'daily' ? '我的日常' : '精华消息';
+    btnArea.style.setProperty('display', page === 'daily' ? 'flex' : 'none', 'important');
+    renderPosts();
   }
+}
 
-  filtered.forEach(post => {
-    const html = `
-      <div class="col-md-6 mb-4">
-        <div class="card" onclick="showPostDetail(${post.id})">
-          <button onclick="event.stopImmediatePropagation(); toggleFeatured(${post.id});" 
-                  class="star-btn ${post.isFeatured ? 'active' : ''}">
-            <i class="fas fa-star"></i>
-          </button>
-          <div class="card-content">${post.content}</div>
-          <div class="card-time">${post.time}</div>
+function handlePublish() {
+  const content = document.getElementById('postContent').value.trim();
+  const selectedCats = Array.from(document.getElementById('categorySelect').selectedOptions).map(opt => opt.value);
+  const file = document.getElementById('postImage').files[0];
+  if (!content || selectedCats.length === 0) return alert("内容或标签不能为空");
+  const submit = (img) => {
+    posts.unshift({ id: Date.now(), author: user, category: selectedCats, content, image: img, time: new Date().toLocaleString(), isFeatured: false, likes: 0, comments: [] });
+    save(); location.reload();
+  };
+  if (file) { const reader = new FileReader(); reader.onload = (e) => submit(e.target.result); reader.readAsDataURL(file); }
+  else submit(null);
+}
+
+function renderPosts() {
+  const list = document.getElementById('dynamicCards'); list.innerHTML = '';
+  let targetPosts = currentPage === 'daily' ? posts : posts.filter(p => p.isFeatured);
+  if (filterTag) targetPosts = targetPosts.filter(p => (Array.isArray(p.category) ? p.category : [p.category]).includes(filterTag));
+  targetPosts.forEach(p => {
+    const tagsHtml = (Array.isArray(p.category) ? p.category : [p.category]).map(tag => `<span class="mini-tag">${tag}</span>`).join('');
+    list.innerHTML += `
+      <div class="col-md-6 col-xl-4">
+        <div class="card ${p.isFeatured ? 'featured-card' : ''}" onclick="viewPost(${p.id})">
+          ${p.image ? `<img src="${p.image}" class="img-preview">` : ''}
+          <div class="card-tags-area">${tagsHtml}</div>
+          <div class="card-content">${p.content}</div>
+          <div class="card-time">${p.time}</div>
+          <div class="action-btns">
+            <button onclick="event.stopPropagation(); toggleStar(${p.id})" class="action-btn star-btn ${p.isFeatured?'active':''}"><i class="fas fa-star"></i></button>
+            <button onclick="event.stopPropagation(); delPost(${p.id})" class="action-btn"><i class="fas fa-trash"></i></button>
+          </div>
         </div>
       </div>`;
-    container.innerHTML += html;
   });
-
-  if (filtered.length === 0) {
-    container.innerHTML = `<div class="col-12 text-center py-5 text-muted">暂无动态</div>`;
-  }
 }
 
-// 切换精华状态
-function toggleFeatured(id) {
-  const post = allPosts.find(p => p.id === id);
-  if (post) {
-    post.isFeatured = !post.isFeatured;
-    renderDynamicCards();
-    alert(post.isFeatured ? "已加入精华消息！" : "已取消精华");
-  }
-}
-
-// 显示详情（适度放大，Ins风格）
-let currentPostId = null;
-function showPostDetail(id) {
-  const post = allPosts.find(p => p.id === id);
-  if (!post) return;
+function viewPost(id) {
   currentPostId = id;
-
-  document.getElementById('modalCategory').innerHTML = 
-    `<span class="badge bg-info">${post.category}</span> ${post.isFeatured ? '<span class="badge bg-warning ms-2">🌟 精华</span>' : ''}`;
-
-  document.getElementById('modalContentArea').innerHTML = `
-    <p>${post.content}</p>
-    <small class="text-muted d-block mt-4">${post.time}</small>
-  `;
-
-  new bootstrap.Modal(document.getElementById('postDetailModal')).show();
+  const p = posts.find(x => x.id === id);
+  if(!p) return;
+  const categories = Array.isArray(p.category) ? p.category : [p.category];
+  document.getElementById('detailCategory').innerHTML = categories.map(c => `<span class="badge bg-primary px-3 me-1">${c}</span>`).join('');
+  document.getElementById('detailTime').innerText = p.time;
+  document.getElementById('detailBody').innerHTML = `${p.image ? `<img src="${p.image}" class="w-100 rounded mb-3">` : ''}<p style="white-space:pre-wrap;">${p.content}</p>`;
+  document.getElementById('likeCount').innerText = p.likes || 0;
+  renderComments(p.comments);
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal')).show();
 }
 
-function toggleFeaturedFromModal() {
-  if (currentPostId) toggleFeatured(currentPostId);
-  bootstrap.Modal.getInstance(document.getElementById('postDetailModal')).hide();
+function openEditTagModal() {
+  const p = posts.find(x => x.id === currentPostId);
+  const select = document.getElementById('editCategorySelect');
+  const currentTags = Array.isArray(p.category) ? p.category : [p.category];
+  select.innerHTML = cats.map(c => `<option value="${c}" ${currentTags.includes(c) ? 'selected' : ''}>${c}</option>`).join('');
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('editTagModal')).show();
 }
 
-// 发布功能
-function showPostModal() {
-  document.getElementById('content').value = '';
-  new bootstrap.Modal(document.getElementById('postModal')).show();
+function saveNewTags() {
+  const select = document.getElementById('editCategorySelect');
+  const newTags = Array.from(select.selectedOptions).map(opt => opt.value);
+  if(newTags.length === 0) return alert("请至少选择一个标签");
+  const p = posts.find(x => x.id === currentPostId);
+  p.category = newTags;
+  save(); renderPosts(); viewPost(currentPostId);
+  bootstrap.Modal.getInstance(document.getElementById('editTagModal')).hide();
 }
 
-function publishPost() {
-  const cat = document.getElementById('categorySelect').value;
-  const content = document.getElementById('content').value.trim();
-  if (!content) return alert("内容不能为空！");
-  
-  allPosts.unshift({
-    id: Date.now(),
-    category: cat,
-    content: content,
-    time: "2026-03-30",
-    isFeatured: false
-  });
-  
-  bootstrap.Modal.getInstance(document.getElementById('postModal')).hide();
-  renderDynamicCards();
-  alert("发布成功！");
+function sendAiMsg() {
+  const input = document.getElementById('aiInput');
+  const box = document.getElementById('chatMessages');
+  if(!input.value.trim()) return;
+  box.innerHTML += `<div class="user-msg">${input.value}</div>`;
+  input.value = '';
+  setTimeout(() => { box.innerHTML += `<div class="ai-msg">分析中...</div>`; box.scrollTop = box.scrollHeight; }, 600);
 }
 
-// 其他辅助功能
-function toggleTheme() {
-  document.body.classList.toggle('light-mode');
-  localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+function handleComment() {
+  const val = document.getElementById('commentInput').value.trim();
+  if(!val) return;
+  posts.find(x => x.id === currentPostId).comments.push({ user: user, msg: val });
+  document.getElementById('commentInput').value = '';
+  renderComments(posts.find(x => x.id === currentPostId).comments); save();
 }
 
-function checkLogin() {
-  const username = localStorage.getItem('username');
-  if (!username) { window.location.href = 'login.html'; return; }
-  document.getElementById('navUsername').textContent = username;
-  document.getElementById('sidebarName').textContent = username;
+function renderComments(list) {
+  document.getElementById('commentsList').innerHTML = list.length ? 
+    list.map(c => `<div class="comment-item"><span class="fw-bold text-primary me-2">${c.user}:</span>${c.msg}</div>`).join('') : '<small class="text-muted">暂无评论</small>';
 }
 
-function goToSettings() { window.location.href = 'settings.html'; }
+function toggleStar(id) { posts.find(x => x.id === id).isFeatured = !posts.find(x => x.id === id).isFeatured; save(); renderPosts(); }
+function addLike() { const p = posts.find(x => x.id === currentPostId); p.likes = (p.likes || 0) + 1; document.getElementById('likeCount').innerText = p.likes; save(); renderPosts(); }
+function delPost(id) { if(confirm("确定删除？")) { posts = posts.filter(x => x.id !== id); save(); renderPosts(); } }
 
-function logout() {
-  if (confirm("确定退出登录吗？")) {
-    localStorage.removeItem('username');
-    window.location.href = 'login.html';
-  }
+function renderTags() {
+  let html = `<span class="badge bg-secondary" style="cursor:pointer; padding:6px 14px; margin-right:8px;" onclick="setFilter(null)">全部</span>`;
+  cats.forEach(c => html += `<span class="badge bg-info" style="cursor:pointer; padding:6px 14px; margin-right:8px;" onclick="setFilter('${c}')">${c}</span>`);
+  document.getElementById('categoryTags').innerHTML = html;
+  document.getElementById('categorySelect').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
 }
 
-function loadProfileFromStorage() {
-  document.getElementById('sidebarAvatar').src = localStorage.getItem('avatar') || "https://via.placeholder.com/160";
-  document.getElementById('sidebarName').textContent = localStorage.getItem('name') || "MYJINS";
-  document.getElementById('sidebarBio').textContent = localStorage.getItem('bio') || "每天记录一点点，让生活更有仪式感。";
-  document.getElementById('hometown').textContent = localStorage.getItem('hometown') || "香港";
-  document.getElementById('birthday').textContent = localStorage.getItem('birthday') || "2005-05-15";
-  document.getElementById('hobby').textContent = localStorage.getItem('hobby') || "摄影、阅读、旅行";
-  document.getElementById('introBox').value = localStorage.getItem('intro') || "hhhh";
+function setFilter(tag) { filterTag = tag; renderPosts(); }
+function addNewCat() {
+  const v = document.getElementById('newCatInput').value.trim();
+  if(v && !cats.includes(v)) { cats.push(v); save(); renderTags(); manageCategories(); document.getElementById('newCatInput').value=''; }
+}
+function manageCategories() {
+  document.getElementById('catList').innerHTML = cats.map((c,i) => `<div class="cat-list-item d-flex justify-content-between align-items-center mb-2"><span>${c}</span><i class="fas fa-trash-alt text-danger" style="cursor:pointer" onclick="cats.splice(${i},1);save();renderTags();manageCategories();"></i></div>`).join('');
 }
 
-// 初始化
+function toggleTheme() { document.body.classList.toggle('light-mode'); }
+function logout() { localStorage.removeItem('username'); location.href='login.html'; }
+
 window.onload = () => {
-  checkLogin();
-  if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
-  loadProfileFromStorage();
-  renderCategoryTags();
-  renderDynamicCards();
+  const avatar = localStorage.getItem('avatar');
+  document.getElementById('navUsername').innerText = user;
+  document.getElementById('sidebarName').innerText = user;
+  document.getElementById('sidebarAvatar').src = avatar && avatar.startsWith('data:image') ? avatar : "https://via.placeholder.com/140";
+  document.getElementById('sidebarBio').innerText = localStorage.getItem('bio') || "记录生活...";
+  document.getElementById('hometown').innerText = localStorage.getItem('hometown') || "香港";
+  document.getElementById('birthday').innerText = localStorage.getItem('birthday') || "2005-05-15";
+  document.getElementById('hobby').innerText = localStorage.getItem('hobby') || "摄影、阅读";
+  document.getElementById('introBox').value = localStorage.getItem('intro') || "每日记录一点点...";
+  renderTags(); switchPage('featured'); manageCategories();
 };
 </script>
 </body>
