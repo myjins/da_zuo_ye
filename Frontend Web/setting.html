@@ -3,103 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>编辑个人资料 - MyLifeRepo</title>
+  <title>编辑资料 - MyLifeRepo</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    body {
-      background: #0d1117;
-      color: #c9d1d9;
-      padding: 40px 20px;
+    :root {
+      --bg-color: #0a0c10;
+      --card-bg: #161b22;
+      --text-color: #e6edf3;
+      --border-color: #30363d;
+      --input-bg: #0d1117;
     }
     .light-mode {
-      background: #ffffff;
-      color: #24292f;
+      --bg-color: #f6f8fa;
+      --card-bg: #ffffff;
+      --text-color: #24292f;
+      --border-color: #d0d7de;
+      --input-bg: #ffffff;
     }
-    .form-control, .form-control:focus {
-      background: #161b22;
-      color: #c9d1d9;
-      border-color: #30363d;
+    body { background: var(--bg-color); color: var(--text-color); transition: 0.3s; padding: 50px 20px; }
+    .settings-card { 
+      max-width: 600px; margin: auto; background: var(--card-bg); 
+      border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; 
     }
-    .light-mode .form-control, .light-mode .form-control:focus {
-      background: #ffffff;
-      color: #24292f;
-      border-color: #d0d7de;
+    .form-label { font-weight: 600; color: var(--text-color); }
+    .form-control { 
+      background-color: var(--input-bg) !important; 
+      color: var(--text-color) !important; 
+      border: 1px solid var(--border-color); 
     }
-    .intro-textarea {
-      height: 180px;
-      resize: vertical;
-    }
+    .form-control:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,0.3); }
+    .avatar-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); margin-bottom: 15px; }
   </style>
 </head>
-<body>
+<body class="dark-mode" id="bodyTag">
 
-<div class="container">
-  <h2 class="mb-4">编辑个人资料</h2>
-  
-  <div class="row">
-    <div class="col-md-8">
-      <div class="mb-3">
-        <label class="form-label">头像地址</label>
-        <input type="text" id="avatarInput" class="form-control" placeholder="https://...">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">用户名</label>
-        <input type="text" id="nameInput" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">个人签名（Bio）</label>
-        <input type="text" id="bioInput" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">籍贯</label>
-        <input type="text" id="hometownInput" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">生日</label>
-        <input type="date" id="birthdayInput" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">爱好（用逗号分隔）</label>
-        <input type="text" id="hobbyInput" class="form-control">
-      </div>
-      
-      <!-- 新增：自我介绍大文本框 -->
-      <div class="mb-4">
-        <label class="form-label">自我介绍</label>
-        <textarea id="introInput" class="form-control intro-textarea" placeholder="写一点关于自己的介绍..."></textarea>
-      </div>
+<div class="settings-card shadow-sm">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0"><i class="fas fa-user-edit me-2"></i>编辑个人资料</h4>
+    <a href="index.html" class="btn btn-sm btn-outline-secondary">返回主页</a>
+  </div>
 
-      <button onclick="saveSettings()" class="btn btn-success me-2">保存修改</button>
-      <button onclick="window.location.href='index.html'" class="btn btn-secondary">返回首页</button>
+  <div class="text-center mb-4">
+    <img src="" id="previewImg" class="avatar-preview">
+    <input type="file" id="avatarInput" class="form-control form-control-sm" accept="image/*" onchange="previewFile()">
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">昵称</label>
+      <input type="text" id="nickName" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">家乡</label>
+      <input type="text" id="homeTown" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">生日</label>
+      <input type="date" id="birthDay" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">兴趣爱好</label>
+      <input type="text" id="hobby" class="form-control">
+    </div>
+    <div class="col-12">
+      <label class="form-label">个人简介</label>
+      <textarea id="bio" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="col-12">
+      <label class="form-label">每日记录寄语 (Intro)</label>
+      <textarea id="intro" class="form-control" rows="3"></textarea>
     </div>
   </div>
+
+  <button class="btn btn-primary w-100 mt-4 fw-bold" onclick="saveSettings()">保存修改</button>
 </div>
 
 <script>
-function loadSettings() {
-  document.getElementById('avatarInput').value = localStorage.getItem('avatar') || "https://via.placeholder.com/160";
-  document.getElementById('nameInput').value = localStorage.getItem('name') || "MYJINS";
-  document.getElementById('bioInput').value = localStorage.getItem('bio') || "每天记录一点点，让生活更有仪式感。";
-  document.getElementById('hometownInput').value = localStorage.getItem('hometown') || "香港";
-  document.getElementById('birthdayInput').value = localStorage.getItem('birthday') || "2005-05-15";
-  document.getElementById('hobbyInput').value = localStorage.getItem('hobby') || "摄影,阅读,旅行";
-  document.getElementById('introInput').value = localStorage.getItem('intro') || "这里是我的自我介绍...";
-}
+  const user = localStorage.getItem('username') || 'MYJINS';
+  
+  // 初始化加载数据
+  window.onload = () => {
+    // 继承主页的主题（如果有的话）
+    if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 
-function saveSettings() {
-  localStorage.setItem('avatar', document.getElementById('avatarInput').value);
-  localStorage.setItem('name', document.getElementById('nameInput').value);
-  localStorage.setItem('bio', document.getElementById('bioInput').value);
-  localStorage.setItem('hometown', document.getElementById('hometownInput').value);
-  localStorage.setItem('birthday', document.getElementById('birthdayInput').value);
-  localStorage.setItem('hobby', document.getElementById('hobbyInput').value);
-  localStorage.setItem('intro', document.getElementById('introInput').value);
+    document.getElementById('nickName').value = localStorage.getItem('username') || '';
+    document.getElementById('homeTown').value = localStorage.getItem('hometown') || '';
+    document.getElementById('birthDay').value = localStorage.getItem('birthday') || '';
+    document.getElementById('hobby').value = localStorage.getItem('hobby') || '';
+    document.getElementById('bio').value = localStorage.getItem('bio') || '';
+    document.getElementById('intro').value = localStorage.getItem('intro') || '';
+    document.getElementById('previewImg').src = localStorage.getItem('avatar') || "https://via.placeholder.com/140";
+  };
 
-  alert("保存成功！");
-  window.location.href = "index.html";
-}
+  function previewFile() {
+    const file = document.getElementById('avatarInput').files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => { document.getElementById('previewImg').src = reader.result; }
+    if (file) reader.readAsDataURL(file);
+  }
 
-window.onload = loadSettings;
+  function saveSettings() {
+    localStorage.setItem('hometown', document.getElementById('homeTown').value);
+    localStorage.setItem('birthday', document.getElementById('birthDay').value);
+    localStorage.setItem('hobby', document.getElementById('hobby').value);
+    localStorage.setItem('bio', document.getElementById('bio').value);
+    localStorage.setItem('intro', document.getElementById('intro').value);
+    localStorage.setItem('avatar', document.getElementById('previewImg').src);
+    
+    alert('资料已更新！');
+    location.href = 'index.html';
+  }
 </script>
 </body>
 </html>
